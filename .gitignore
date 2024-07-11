@@ -6,6 +6,9 @@ wip.md
 slides/brutos/*.html
 *.db
 *.bd
+wpp_send_messages/credentials.json
+wpp_send_messages/token.json
+.env
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

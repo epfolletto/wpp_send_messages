@@ -5,34 +5,24 @@ import pandas as pd
 import urllib
 import time
 import os
-from quickstart import main
 
 service = Service()
 options = webdriver.ChromeOptions()
 options.add_experimental_option("detach", True)
 browser = webdriver.Chrome(service=service, options=options)
 
-# df = pd.read_csv('clients.csv')
-df, clients_send, month, year = main()
+df = pd.read_csv('clients.csv')
 
 list_send_success = []
 lista_send_failure = []
+for i in df.index:
+    name = df.loc[i, 'name']
+    message = df.loc[i, 'message']
+    file = df.loc[i, 'file']
+    phone = df.loc[i, 'phone']
 
-
-for i in clients_send:
-    row = df[df['document'] == i['document']]
-    name = row.name.iloc[0]
-    message = row.message.iloc[0]
-    link = i['link']
-    phone = row.phone.iloc[0]
-
-    text = (message
-            .replace("<name>", name)
-            .replace("<month>", month)
-            .replace("<year>", year)
-            .replace("<link>", link))
+    text = message.replace("fulano", name)
     text = urllib.parse.quote(text)
-    text = text.replace("%7C", "\n")
 
     url = f"https://web.whatsapp.com/send?phone={phone}&text={text}"
     browser.get(url)
@@ -47,6 +37,30 @@ for i in clients_send:
         xpath_enter = ('//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/'
                        'div[2]/button/span')
         browser.find_element(By.XPATH, xpath_enter).click()
+
+        if file != "N":
+            # caminho completo anexo
+            full_path = os.path.abspath(file)
+
+            # xpath botao anexar
+            xpath_attach = ('//*[@id="main"]/footer/div[1]/div/span[2]/div/'
+                            'div[1]/div[2]/div/div/div/span')
+            browser.find_element(By.XPATH, xpath_attach).click()
+
+            # xpath opcao documento
+            xpath_document = ('//*[@id="main"]/footer/div[1]/div/span[2]/div/'
+                              'div[1]/div[2]/div/span/div/ul/div/div[1]/li/'
+                              'div/input')
+            browser.find_element(By.XPATH, xpath_document).send_keys(
+                full_path)
+
+            # tempo carregar anexo
+            time.sleep(8)
+
+            # xpath botao enviar anexo
+            xpath_send = ('//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/'
+                          'div/div/div[2]/div/div[2]/div[2]/div/div/span')
+            browser.find_element(By.XPATH, xpath_send).click()
 
         list_send_success.append({
             'name': name,
